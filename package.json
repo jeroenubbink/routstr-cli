@@ -1,0 +1,28 @@
+{
+  "name": "@routstr/cli",
+  "version": "0.1.0",
+  "description": "CLI for interacting with a Routstr node",
+  "type": "module",
+  "bin": {
+    "routstr": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "dev": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
+    "check": "biome check src",
+    "check:fix": "biome check --write src"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "^1.1.0",
+    "typescript": "^5.5.0"
+  }
+}
