@@ -7,6 +7,11 @@ import { configGetCommand, configSetCommand, configShowCommand } from "./command
 import { instructCommand } from "./commands/instruct";
 import { modelsListCommand } from "./commands/models";
 import {
+  providerModelsListCommand,
+  providerModelsShowCommand,
+  providerModelsUpdateCommand,
+} from "./commands/provider-models";
+import {
   providersAddCommand,
   providersDisableCommand,
   providersEnableCommand,
@@ -137,6 +142,34 @@ providersCmd
   .description("Disable a provider (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersDisableCommand);
+
+// providers models (per-model edits scoped under a provider)
+const providerModelsCmd = providersCmd
+  .command("models")
+  .description("Manage models attached to a provider");
+providerModelsCmd
+  .command("list <providerId>")
+  .description("List models for a provider — DB + remote upstream models (requires admin token)")
+  .option("-t, --admin-token <token>", "Admin session token")
+  .option("--source <source>", "Filter: all | db | remote", "all")
+  .action(providerModelsListCommand);
+providerModelsCmd
+  .command("show <providerId> <modelId>")
+  .description("Show full details for a model (requires admin token)")
+  .option("-t, --admin-token <token>", "Admin session token")
+  .action(providerModelsShowCommand);
+providerModelsCmd
+  .command("update <providerId> <modelId>")
+  .description("Update a single model's mutable fields (requires admin token)")
+  .option("-t, --admin-token <token>", "Admin session token")
+  .option(
+    "--forwarded-model-id <id>",
+    "Model ID forwarded upstream (defaults to model id when empty)",
+  )
+  .option("--enabled <bool>", "Enable/disable model (true|false)")
+  .option("--name <name>", "Display name")
+  .option("--description <text>", "Description")
+  .action(providerModelsUpdateCommand);
 
 // wallet
 const walletCmd = program.command("wallet").description("Wallet and balance operations");
