@@ -12,22 +12,38 @@ Node: {name} — {description}
 - API: OpenAI-compatible (POST /v1/chat/completions)
 - Payment: Cashu ecash tokens, Lightning Network
 
-## Available Operations
+## Two ways to use this node
 
-### 1. Check Available Models
+### A) HTTP API (any client, no install)
+Inference + balance + node info — no admin token needed.
+
+### B) Routstr CLI (recommended for ops & batch tasks)
+Lightweight TS CLI for inspecting and configuring the node, including admin tasks
+(providers, models, wallet withdrawals, config). Install:
+\`\`\`
+cd cli && bun install
+alias routstr="bun run $(pwd)/cli/src/index.ts"
+routstr init --node-url {node_url} --token <admin-session-token>
+\`\`\`
+Run \`routstr schema\` for the full machine-readable command tree, or \`routstr <cmd> --help\`.
+
+---
+
+## HTTP API — Inference
+
+### Check Available Models
 \`\`\`
 GET {node_url}/v1/models
 \`\`\`
-Returns a list of models with pricing (cost per 1K input/output tokens in msats).
+Returns models with pricing (per-token USD in \`pricing\`, per-token sats in \`sats_pricing\`).
 
-### 2. Check Balance
+### Check Balance
 \`\`\`
 GET {node_url}/v1/balance
 Headers: Authorization: Bearer <api_key>
 \`\`\`
-Returns current balance and reserved amount in msats.
 
-### 3. Make an Inference Request
+### Make an Inference Request
 \`\`\`
 POST {node_url}/v1/chat/completions
 Headers:
@@ -35,13 +51,13 @@ Headers:
   Content-Type: application/json
 Body: {"model": "<model_id>", "messages": [{"role": "user", "content": "..."}]}
 \`\`\`
-Standard OpenAI chat completion format. Supports streaming with \`"stream": true\`.
+Standard OpenAI chat completion. Supports \`"stream": true\`. Also supports
+\`POST /v1/responses\` (OpenAI Responses API).
 
-### 4. Node Info
+### Node Info
 \`\`\`
 GET {node_url}/v1/info
 \`\`\`
-Returns node name, version, npub, and supported mints.
 
 ## Payment Flow
 1. Obtain Cashu tokens from a supported mint: {mints}
@@ -55,10 +71,68 @@ Returns node name, version, npub, and supported mints.
 - 503: No upstream provider available
 - 500: Upstream provider error (details in response body)
 
-## Tips
-- Always GET /v1/models first to discover available models and current pricing
-- Use streaming for long responses to get faster time-to-first-token
-- Check /v1/info to verify node identity and supported payment mints
+---
+
+## CLI command map (use this as the source of truth)
+
+Global flags (apply to every command):
+- \`-n, --node <url>\`     — override node URL
+- \`-o, --output <fmt>\`    — \`text\` (default) or \`json\` for machine parsing
+- \`-q, --quiet\`           — suppress non-essential output
+- \`--no-input\`            — agent mode (never prompt)
+
+### Auth & config
+- \`routstr init --node-url <url> --token <admin-token>\` — save to ~/.routstr/config.json
+- \`routstr init --show\` — print current config
+- \`routstr status\` — node health, version
+- \`routstr config show\` — full node settings (admin-redacted)
+- \`routstr config get <key>\` — single setting
+- \`routstr config set <key> <value> -t <admin>\` — write a setting
+
+### Models (read-only public view)
+- \`routstr models list [--provider <name>]\` — pricing for all enabled models
+
+### Providers (admin-only)
+- \`routstr providers list -t <admin>\` — upstream providers
+- \`routstr providers show <id> -t <admin>\` — full provider details
+- \`routstr providers add <type> --base-url <url> --api-key <key> -t <admin>\`
+- \`routstr providers update <id> [--type|--base-url|--api-key|--api-version|--enabled <bool>|--fee <mult>|--settings <json>] -t <admin>\`
+- \`routstr providers enable <id> -t <admin>\` / \`disable <id>\`
+- \`routstr providers remove <id> -t <admin>\`
+- \`routstr providers test <id> -t <admin>\` — health-check upstream
+
+### Provider models (per-model edits scoped to a provider; admin-only)
+- \`routstr providers models list <pid> [--source all|db|remote] -t <admin>\` — DB + upstream-discovered models
+- \`routstr providers models show <pid> <model_id> -t <admin>\` — full model detail
+- \`routstr providers models update <pid> <model_id> [--forwarded-model-id <id>|--enabled <bool>|--name|--description] -t <admin>\`
+
+Batch update example (loop over ids):
+\`\`\`
+routstr providers models list <pid> --source db -o json -t <admin> \\
+  | jq -r '.db_models[].id' \\
+  | xargs -I{} routstr providers models update <pid> {} --forwarded-model-id {} -t <admin>
+\`\`\`
+
+### Wallet
+- \`routstr wallet balance -k <api_key>\` — current balance for an API key
+- \`routstr wallet send <amount> -m <mint_url> -t <admin>\` — withdraw as Cashu token
+- \`routstr wallet receive\` — supported mints
+
+### Discovery (for agents)
+- \`routstr instruct [--format text|json|openai]\` — this document
+- \`routstr schema\` — full command tree as JSON
+- \`<any cmd> --help\` — per-command help
+
+### Operating the node
+- \`routstr serve [-h <host>] [-p <port>] [-w <workers>] [--reload]\` — start FastAPI server
+- \`routstr monitor [-r <secs>]\` — TUI dashboard (providers, models, requests)
+
+## Tips for agents
+- Always pair admin commands with \`-t <admin-token>\` or pre-run \`routstr init --token <…>\`
+- Use \`-o json\` everywhere for parsing; status code is non-zero on error
+- Use \`routstr schema\` to discover commands without parsing this prose
+- Discover model ids from \`routstr models list -o json\` (public) or \`routstr providers models list <pid> -o json\` (admin, includes disabled and remote)
+- For batch model edits, iterate ids client-side — the API expects per-model PATCH/POST
 `;
 
 function fillTemplate(name: string, description: string, url: string, mints: string): string {
