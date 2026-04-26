@@ -15,8 +15,15 @@
     "format": "biome format --write src",
     "format:check": "biome format src",
     "check": "biome check src",
-    "check:fix": "biome check --write src"
+    "check:fix": "biome check --write src",
+    "test": "bun run typecheck && bun run lint && bun run format:check && bun run build",
+    "test:integration": "bun run build && bash scripts/integration-test.sh"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "commander": "^12.1.0"
   },

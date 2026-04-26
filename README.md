@@ -58,74 +58,18 @@ routstr init --node-url http://localhost:8000 --token <admin-session-token>
 
 ---
 
-## What the CLI can do
+## Discover what the CLI can do
 
-### Inspect the node
-
-| Command                                       | Purpose                                   |
-| --------------------------------------------- | ----------------------------------------- |
-| `routstr status`                              | Health check, version, npub               |
-| `routstr config show`                         | Full settings (sensitive values redacted) |
-| `routstr config get <key>`                    | Single setting                            |
-| `routstr config set <key> <value> -t <admin>` | Update a setting                          |
-
-### Discover models (public)
-
-| Command                                 | Purpose                                    |
-| --------------------------------------- | ------------------------------------------ |
-| `routstr models list`                   | All enabled models with USD + sats pricing |
-| `routstr models list --provider <name>` | Filter by provider name or id              |
-
-### Manage upstream providers (admin)
-
-| Command                                                                    | Purpose                                                                              |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `routstr providers list -t <admin>`                                        | All upstream providers                                                               |
-| `routstr providers show <id> -t <admin>`                                   | Full provider record                                                                 |
-| `routstr providers add <type> --base-url <url> --api-key <key> -t <admin>` | Add a new upstream                                                                   |
-| `routstr providers update <id> [...flags] -t <admin>`                      | Patch any of: `--type --base-url --api-key --api-version --enabled --fee --settings` |
-| `routstr providers enable <id> -t <admin>` / `disable`                     | Toggle availability                                                                  |
-| `routstr providers remove <id> -t <admin>`                                 | Delete                                                                               |
-| `routstr providers test <id> -t <admin>`                                   | Health-check upstream                                                                |
-
-### Manage models per provider (admin)
-
-| Command                                                                     | Purpose                                                              |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `routstr providers models list <pid> [--source all\|db\|remote] -t <admin>` | DB models + remote-discovered models                                 |
-| `routstr providers models show <pid> <model_id> -t <admin>`                 | Full model details                                                   |
-| `routstr providers models update <pid> <model_id> [...flags] -t <admin>`    | Patch `--forwarded-model-id`, `--enabled`, `--name`, `--description` |
-
-**Batch update example** — change `forwarded_model_id` to the bare id for every DB model under provider 2:
+The CLI is self-describing — don't memorize commands, ask the binary:
 
 ```bash
-routstr providers models list 2 --source db -o json \
-  | jq -r '.db_models[].id' \
-  | xargs -I{} routstr providers models update 2 {} --forwarded-model-id {}
+routstr --help               # top-level commands and global flags
+routstr <command> --help     # flags for a specific command (e.g. routstr providers --help)
+routstr schema               # full command tree as JSON (machine-readable, for agents)
+routstr instruct             # canonical agent guide for the connected node
 ```
 
-### Wallet & payments
-
-| Command                                                 | Purpose                        |
-| ------------------------------------------------------- | ------------------------------ |
-| `routstr wallet balance -k <api_key>`                   | Current balance for an API key |
-| `routstr wallet send <amount> -m <mint_url> -t <admin>` | Withdraw as Cashu token        |
-| `routstr wallet receive`                                | List supported mints           |
-
-### Operate the node
-
-| Command                                                           | Purpose                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------ |
-| `routstr serve [-h <host>] [-p <port>] [-w <workers>] [--reload]` | Start FastAPI server                             |
-| `routstr monitor [-r <secs>]`                                     | Live TUI dashboard (providers, models, requests) |
-
-### Discovery for agents
-
-| Command                                          | Purpose                             |
-| ------------------------------------------------ | ----------------------------------- |
-| `routstr instruct [--format text\|json\|openai]` | Canonical agent guide for this node |
-| `routstr schema`                                 | Full command tree as JSON           |
-| `routstr <cmd> --help`                           | Per-command flags and usage         |
+`schema` and `instruct` are the source of truth and are updated automatically whenever the CLI changes — this README intentionally does not duplicate them.
 
 ---
 
