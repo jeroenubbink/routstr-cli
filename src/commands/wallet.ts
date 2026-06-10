@@ -11,12 +11,13 @@ import {
 import type { BalanceResponse, NodeInfo } from "../types";
 
 export async function walletBalanceCommand(opts: { key?: string }): Promise<void> {
-  if (!opts.key) {
+  const token = resolveToken(opts.key);
+  if (!token) {
     printError("API key required. Use -k <api-key> or -k <cashu-token>");
     process.exit(1);
   }
 
-  const headers = authHeaders(opts.key);
+  const headers = authHeaders(token);
 
   const data = await fetchJson<BalanceResponse>("/v1/balance/info", { headers });
   if (!data) process.exit(1);

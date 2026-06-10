@@ -22,9 +22,7 @@ import {
   providersUpdateCommand,
 } from "./commands/providers";
 import { schemaCommand } from "./commands/schema";
-import { serveCommand } from "./commands/serve";
 import { statusCommand } from "./commands/status";
-import { walletBalanceCommand, walletReceiveCommand, walletSendCommand } from "./commands/wallet";
 import { getNodeUrl } from "./config";
 import { startMonitor } from "./tui/app";
 
@@ -171,23 +169,23 @@ providerModelsCmd
   .option("--description <text>", "Description")
   .action(providerModelsUpdateCommand);
 
-// wallet
-const walletCmd = program.command("wallet").description("Wallet and balance operations");
-walletCmd
-  .command("balance")
-  .description("Show wallet balance")
-  .option("-k, --key <apiKey>", "API key (Bearer token)")
-  .action(walletBalanceCommand);
-walletCmd
-  .command("send <amount>")
-  .description("Withdraw sats from node wallet as Cashu token (requires admin token)")
-  .option("-m, --mint <url>", "Mint URL to withdraw from")
-  .option("-t, --admin-token <token>", "Admin session token")
-  .action(walletSendCommand);
-walletCmd
-  .command("receive")
-  .description("Show receive info (supported Cashu mints)")
-  .action(walletReceiveCommand);
+// wallet — DISABLED for now (balance/send/receive need cashu/sk API key wiring; not ready)
+// const walletCmd = program.command("wallet").description("Wallet and balance operations");
+// walletCmd
+//   .command("balance")
+//   .description("Show wallet balance")
+//   .option("-k, --key <apiKey>", "API key (Bearer token)")
+//   .action(walletBalanceCommand);
+// walletCmd
+//   .command("send <amount>")
+//   .description("Withdraw sats from node wallet as Cashu token (requires admin token)")
+//   .option("-m, --mint <url>", "Mint URL to withdraw from")
+//   .option("-t, --admin-token <token>", "Admin session token")
+//   .action(walletSendCommand);
+// walletCmd
+//   .command("receive")
+//   .description("Show receive info (supported Cashu mints)")
+//   .action(walletReceiveCommand);
 
 // instruct
 program
@@ -202,15 +200,15 @@ program
   .description("Dump CLI structure as JSON for agent discovery")
   .action(() => schemaCommand(program));
 
-// serve
-program
-  .command("serve")
-  .description("Start the Routstr node server")
-  .option("-h, --host <host>", "Bind host", "0.0.0.0")
-  .option("-p, --port <port>", "Bind port", "8000")
-  .option("-w, --workers <count>", "Number of workers", "1")
-  .option("--reload", "Enable auto-reload (dev mode)", false)
-  .action(serveCommand);
+// serve — DISABLED for now
+// program
+//   .command("serve")
+//   .description("Start the Routstr node server")
+//   .option("-h, --host <host>", "Bind host", "0.0.0.0")
+//   .option("-p, --port <port>", "Bind port", "8000")
+//   .option("-w, --workers <count>", "Number of workers", "1")
+//   .option("--reload", "Enable auto-reload (dev mode)", false)
+//   .action(serveCommand);
 
 // monitor
 program
