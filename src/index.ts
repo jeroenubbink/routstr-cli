@@ -101,26 +101,27 @@ providersCmd
   .description("Add a new upstream provider (requires admin token)")
   .option("--api-key <key>", "Provider API key")
   .option("--base-url <url>", "Provider base URL")
+  .option("--slug <slug>", "Stable provider slug (auto-generated if omitted)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersAddCommand);
 providersCmd
-  .command("remove <id>")
-  .description("Remove an upstream provider by ID (requires admin token)")
+  .command("remove <provider>")
+  .description("Remove an upstream provider by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersRemoveCommand);
 providersCmd
-  .command("test <id>")
-  .description("Health check a provider by ID (requires admin token)")
+  .command("test <provider>")
+  .description("Health check a provider by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersTestCommand);
 providersCmd
-  .command("show <id>")
-  .description("Show full details for a provider (requires admin token)")
+  .command("show <provider>")
+  .description("Show full details for a provider by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersShowCommand);
 providersCmd
-  .command("update <id>")
-  .description("Update provider fields (requires admin token)")
+  .command("update <provider>")
+  .description("Update provider fields by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .option("--type <type>", "Provider type (openai, anthropic, azure, openrouter, custom, ...)")
   .option("--base-url <url>", "Upstream base URL")
@@ -129,15 +130,16 @@ providersCmd
   .option("--enabled <bool>", "Enable/disable provider (true|false)")
   .option("--fee <multiplier>", "Provider fee multiplier (e.g. 1.01 for 1%)")
   .option("--settings <json>", "Provider-specific settings as JSON")
+  .option("--slug <slug>", "Set/rename the stable provider slug")
   .action(providersUpdateCommand);
 providersCmd
-  .command("enable <id>")
-  .description("Enable a provider (requires admin token)")
+  .command("enable <provider>")
+  .description("Enable a provider by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersEnableCommand);
 providersCmd
-  .command("disable <id>")
-  .description("Disable a provider (requires admin token)")
+  .command("disable <provider>")
+  .description("Disable a provider by ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providersDisableCommand);
 
@@ -146,19 +148,23 @@ const providerModelsCmd = providersCmd
   .command("models")
   .description("Manage models attached to a provider");
 providerModelsCmd
-  .command("list <providerId>")
-  .description("List models for a provider — DB + remote upstream models (requires admin token)")
+  .command("list <provider>")
+  .description(
+    "List models for a provider ID or slug — DB + remote upstream models (requires admin token)",
+  )
   .option("-t, --admin-token <token>", "Admin session token")
   .option("--source <source>", "Filter: all | db | remote", "all")
   .action(providerModelsListCommand);
 providerModelsCmd
-  .command("show <providerId> <modelId>")
-  .description("Show full details for a model (requires admin token)")
+  .command("show <provider> <modelId>")
+  .description("Show full details for a model by provider ID or slug (requires admin token)")
   .option("-t, --admin-token <token>", "Admin session token")
   .action(providerModelsShowCommand);
 providerModelsCmd
-  .command("update <providerId> <modelId>")
-  .description("Update a single model's mutable fields (requires admin token)")
+  .command("update <provider> <modelId>")
+  .description(
+    "Update a single model's mutable fields by provider ID or slug (requires admin token)",
+  )
   .option("-t, --admin-token <token>", "Admin session token")
   .option(
     "--forwarded-model-id <id>",

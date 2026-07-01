@@ -36,7 +36,7 @@ function parseBool(value: string): boolean {
 }
 
 interface ProviderModelsResponse {
-  provider: { id: number; provider_type: string; base_url: string };
+  provider: { id: number; slug?: string | null; provider_type: string; base_url: string };
   db_models: AdminModel[];
   remote_models: AdminModel[];
 }
@@ -79,13 +79,15 @@ export async function providerModelsListCommand(
       rows.push([m.id, "remote", "—", "—", m.name ?? ""]);
     }
 
+    const providerLabel = d.provider.slug ?? `#${d.provider.id}`;
+
     if (!rows.length) {
-      printInfo(`No models for provider #${d.provider.id} (source=${source}).`);
+      printInfo(`No models for provider ${providerLabel} (source=${source}).`);
       return;
     }
 
     printTable(
-      `Models for provider #${d.provider.id} — ${d.provider.provider_type} (${rows.length})`,
+      `Models for provider ${providerLabel} — ${d.provider.provider_type} (${rows.length})`,
       ["ID", "Source", "Enabled", "Forwarded ID", "Name"],
       rows,
     );
