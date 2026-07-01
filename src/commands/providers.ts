@@ -19,6 +19,7 @@ export async function providersListCommand(opts: { adminToken?: string }): Promi
     const resp = await fetchJson<
       Array<{
         id: number;
+        slug?: string | null;
         provider_type: string;
         base_url: string;
         enabled: boolean;
@@ -34,6 +35,7 @@ export async function providersListCommand(opts: { adminToken?: string }): Promi
       }
       const rows = items.map((p) => [
         String(p.id),
+        p.slug ?? "—",
         p.provider_type,
         p.base_url,
         p.enabled ? "yes" : "no",
@@ -41,7 +43,7 @@ export async function providersListCommand(opts: { adminToken?: string }): Promi
       ]);
       printTable(
         `Upstream Providers (${items.length})`,
-        ["ID", "Type", "URL", "Enabled", "Fee"],
+        ["ID", "Slug", "Type", "URL", "Enabled", "Fee"],
         rows,
       );
     });
@@ -77,7 +79,7 @@ export async function providersListCommand(opts: { adminToken?: string }): Promi
 
 export async function providersAddCommand(
   name: string,
-  opts: { apiKey?: string; baseUrl?: string; adminToken?: string },
+  opts: { apiKey?: string; baseUrl?: string; adminToken?: string; slug?: string },
 ): Promise<void> {
   const token = resolveToken(opts.adminToken);
   const url = `${nodeUrl()}/admin/api/upstream-providers`;
@@ -86,6 +88,7 @@ export async function providersAddCommand(
     base_url: opts.baseUrl ?? "",
     api_key: opts.apiKey ?? "",
   };
+  if (opts.slug !== undefined) body.slug = opts.slug;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -162,6 +165,7 @@ export async function providersTestCommand(
 
 interface UpstreamProviderDetail {
   id: number;
+  slug?: string | null;
   provider_type: string;
   base_url: string;
   api_key: string;
@@ -186,6 +190,7 @@ export async function providersShowCommand(
 
   render(data, (p) => {
     printInfo(`\x1b[1mProvider #${p.id}\x1b[0m`);
+    if (p.slug) printInfo(`  Slug:        ${p.slug}`);
     printInfo(`  Type:        ${p.provider_type}`);
     printInfo(`  Base URL:    ${p.base_url}`);
     printInfo(`  API key:     ${p.api_key || "(none)"}`);
@@ -207,6 +212,7 @@ interface UpdateProviderOptions {
   enabled?: string;
   fee?: string;
   settings?: string;
+  slug?: string;
 }
 
 function parseBool(value: string): boolean {
@@ -251,10 +257,11 @@ export async function providersUpdateCommand(
       process.exit(1);
     }
   }
+  if (opts.slug !== undefined) body.slug = opts.slug;
 
   if (Object.keys(body).length === 0) {
     printError(
-      "No fields to update. Pass one of: --type, --base-url, --api-key, --api-version, --enabled, --fee, --settings.",
+      "No fields to update. Pass one of: --type, --base-url, --api-key, --api-version, --enabled, --fee, --settings, --slug.",
     );
     process.exit(1);
   }

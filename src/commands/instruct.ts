@@ -93,24 +93,26 @@ Global flags (apply to every command):
 - \`routstr models list [--provider <name>]\` — pricing for all enabled models
 
 ### Providers (admin-only)
-- \`routstr providers list -t <admin>\` — upstream providers
-- \`routstr providers show <id> -t <admin>\` — full provider details
-- \`routstr providers add <type> --base-url <url> --api-key <key> -t <admin>\`
-- \`routstr providers update <id> [--type|--base-url|--api-key|--api-version|--enabled <bool>|--fee <mult>|--settings <json>] -t <admin>\`
-- \`routstr providers enable <id> -t <admin>\` / \`disable <id>\`
-- \`routstr providers remove <id> -t <admin>\`
-- \`routstr providers test <id> -t <admin>\` — health-check upstream
+Provider refs accept either numeric ID or stable slug. Prefer slugs in automation.
+- \`routstr providers list -t <admin>\` — upstream providers, including stable \`slug\`
+- \`routstr providers show <provider> -t <admin>\` — full provider details by ID or slug
+- \`routstr providers add <type> --base-url <url> --api-key <key> [--slug <slug>] -t <admin>\`
+- \`routstr providers update <provider> [--type|--base-url|--api-key|--api-version|--enabled <bool>|--fee <mult>|--settings <json>|--slug <slug>] -t <admin>\`
+- \`routstr providers enable <provider> -t <admin>\` / \`disable <provider>\`
+- \`routstr providers remove <provider> -t <admin>\`
+- \`routstr providers test <provider> -t <admin>\` — health-check upstream
 
 ### Provider models (per-model edits scoped to a provider; admin-only)
-- \`routstr providers models list <pid> [--source all|db|remote] -t <admin>\` — DB + upstream-discovered models
-- \`routstr providers models show <pid> <model_id> -t <admin>\` — full model detail
-- \`routstr providers models update <pid> <model_id> [--forwarded-model-id <id>|--enabled <bool>|--name|--description] -t <admin>\`
+Use the provider slug from \`routstr providers list -t <admin> -o json\` as \`<provider>\` when possible.
+- \`routstr providers models list <provider> [--source all|db|remote] -t <admin>\` — DB + upstream-discovered models
+- \`routstr providers models show <provider> <model_id> -t <admin>\` — full model detail
+- \`routstr providers models update <provider> <model_id> [--forwarded-model-id <id>|--enabled <bool>|--name|--description] -t <admin>\`
 
 Batch update example (loop over ids):
 \`\`\`
-routstr providers models list <pid> --source db -o json -t <admin> \\
+routstr providers models list <provider-slug> --source db -o json -t <admin> \\
   | jq -r '.db_models[].id' \\
-  | xargs -I{} routstr providers models update <pid> {} --forwarded-model-id {} -t <admin>
+  | xargs -I{} routstr providers models update <provider-slug> {} --forwarded-model-id {} -t <admin>
 \`\`\`
 
 ### Wallet

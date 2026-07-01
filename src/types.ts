@@ -49,6 +49,7 @@ export interface ModelsResponse {
 export interface Provider {
   name?: string;
   id?: string;
+  slug?: string | null;
   base_url?: string;
   url?: string;
   model_count?: number;
